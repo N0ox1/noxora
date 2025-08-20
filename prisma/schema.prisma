@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id       String       @id @default(cuid())
+  name     String
+  plan     String       @default("BASIC")
+  isActive Boolean      @default(true)
+  shops    Barbershop[]
+}
+
+model Barbershop {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  slug      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  services     Service[]
+  employees    Employee[]
+  clients      Client[]
+  appointments Appointment[]
+  Tenant       Tenant        @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("barbershops")
+}
+
+model Service {
+  id           String     @id @default(cuid())
+  tenantId     String
+  barbershopId String
+  name         String
+  durationMin  Int
+  priceCents   Int
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  Barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
+
+  @@index([tenantId, barbershopId])
+  @@map("services")
+}
+
+model Employee {
+  id           String   @id @default(cuid())
+  tenantId     String
+  barbershopId String
+  name         String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  appointments Appointment[]
+  Barbershop   Barbershop    @relation(fields: [barbershopId], references: [id])
+
+  @@index([tenantId, barbershopId])
+  @@map("employees")
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  tenantId  String
+  phone     String
+  name      String
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  appointments Appointment[]
+  Barbershop   Barbershop?   @relation(fields: [barbershopId], references: [id])
+  barbershopId String?
+
+  @@unique([tenantId, phone])
+  @@index([tenantId])
+  @@map("clients")
+}
+
+model Appointment {
+  id           String     @id @default(cuid())
+  tenantId     String
+  barbershopId String
+  employeeId   String
+  clientId     String
+  serviceId    String
+  startAt      DateTime
+  endAt        DateTime
+  status       String     @default("confirmed")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  Barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
+  Employee     Employee   @relation(fields: [employeeId], references: [id])
+  Client       Client     @relation(fields: [clientId], references: [id])
+
+  @@unique([tenantId, employeeId, startAt, endAt])
+  @@index([tenantId, barbershopId, employeeId, startAt])
+  @@map("appointments")
+}
