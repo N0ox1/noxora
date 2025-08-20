@@ -36,16 +36,19 @@ model Barbershop {
 }
 
 model Service {
-  id           String     @id @default(cuid())
+  id           String   @id @default(cuid())
   tenantId     String
   barbershopId String
   name         String
   durationMin  Int
   priceCents   Int
-  isActive     Boolean    @default(true)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  Barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // relação reversa
+  appointments Appointment[]
+  Barbershop   Barbershop    @relation(fields: [barbershopId], references: [id])
 
   @@index([tenantId, barbershopId])
   @@map("services")
@@ -86,7 +89,7 @@ model Client {
 }
 
 model Appointment {
-  id           String     @id @default(cuid())
+  id           String   @id @default(cuid())
   tenantId     String
   barbershopId String
   employeeId   String
@@ -94,12 +97,15 @@ model Appointment {
   serviceId    String
   startAt      DateTime
   endAt        DateTime
-  status       String     @default("confirmed")
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  Barbershop   Barbershop @relation(fields: [barbershopId], references: [id])
-  Employee     Employee   @relation(fields: [employeeId], references: [id])
-  Client       Client     @relation(fields: [clientId], references: [id])
+  status       String   @default("confirmed")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // RELAÇÕES
+  service    Service    @relation(fields: [serviceId], references: [id])
+  employee   Employee   @relation(fields: [employeeId], references: [id])
+  client     Client     @relation(fields: [clientId], references: [id])
+  barbershop Barbershop @relation(fields: [barbershopId], references: [id])
 
   @@unique([tenantId, employeeId, startAt, endAt])
   @@index([tenantId, barbershopId, employeeId, startAt])
