@@ -7,9 +7,10 @@ async function getData(tenantId: string, slug: string) {
   return res.json();
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const tenantId = process.env.NEXT_PUBLIC_DEV_TENANT!;
-  const data = await getData(tenantId, params.slug);
+  const data = await getData(tenantId, slug);
   return (
     <main className="mx-auto max-w-2xl p-6">
       <h1 className="text-2xl font-semibold">{data.name}</h1>
