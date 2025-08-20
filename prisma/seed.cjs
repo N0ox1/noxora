@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 async function main() {
@@ -26,19 +25,13 @@ async function main() {
   await prisma.service.createMany({
     data: [
       { tenantId, barbershopId: shop.id, name: "Corte", durationMin: 30, priceCents: 4000 },
-      { tenantId, barbershopId: shop.id, name: "Barba", durationMin: 20, priceCents: 3000 },
+      { tenantId, barbershopId: shop.id, name: "Barba",  durationMin: 20, priceCents: 3000 },
     ],
     skipDuplicates: true,
   });
 
-  console.log("✅ Seed ok:", { tenantId, shopSlug: "barbearia-dev", employeeId: "emp-dev-1" });
+  console.log("Seed ok");
 }
 
-main()
-  .catch((e) => {
-    console.error("Seed error:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+main().catch(e => { console.error(e); process.exit(1); })
+      .finally(() => prisma.$disconnect());
